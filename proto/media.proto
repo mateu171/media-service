@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+package media;
+option go_package = "media-service/proto;mediapb";
+
+enum MediaFormat {
+  MEDIA_FORMAT_UNSPECIFIED = 0;
+  MEDIA_FORMAT_PNG = 1;
+  MEDIA_FORMAT_JPEG = 2;
+  MEDIA_FORMAT_WEBP = 3;
+  MEDIA_FORMAT_MP4 = 4;
+}
+
+message ProcessMediaRequest {
+  string client_id = 1;
+  string filename = 2;
+  MediaFormat target_format = 3;
+  int32 quality_level = 4; // 1..100
+}
+
+message JobResponse {
+  string job_id = 1;
+  string status = 2;
+  int64 created_at = 3;
+}
+
+message GetJobStatusRequest {
+  string job_id = 1;
+}
+
+message JobStatusResponse {
+  string job_id = 1;
+  string status = 2;
+  int32 progress_percent = 3;
+  int64 completed_at = 4;
+}
+
+message ProgressUpdate {
+  string job_id = 1;
+  string current_stage = 2;
+  int32 progress_percent = 3;
+  bool is_completed = 4;
+}
+
+service MediaService {
+  rpc SubmitJob(ProcessMediaRequest) returns (JobResponse);
+  rpc GetJobStatus(GetJobStatusRequest) returns (JobStatusResponse);
+  rpc TrackProgress(GetJobStatusRequest) returns (stream ProgressUpdate);
+}
